@@ -22,11 +22,22 @@ var pokemons = []pokemon{
 
 func getPokemon(c *gin.Context){
 	c.IndentedJSON(http.StatusOK, pokemons)
+}
 
+func createPokemon(c *gin.Context) {
+	var pokemon pokemon
+
+	if err := c.BindJSON(&pokemon); err != nil {
+		return
+	}
+
+	pokemons = append(pokemons, pokemon)
+	c.IndentedJSON(http.StatusCreated, pokemon)
 }
 
 func main(){
 	router := gin.Default()
+	router.POST("pokemons", createPokemon)
 	router.GET("pokemons", getPokemon)
 	router.Run("localhost:8080")
 }
