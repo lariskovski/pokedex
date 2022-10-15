@@ -26,15 +26,12 @@ for row in rows:
         base_stats["speedDefense"] = cell[10].get_text()
         base_stats["specialDefense"] = cell[11].get_text()
 
-        pokemons.append({
-                        "name": name,
-                        "data": {
-                            "id": pid,
+        pokemons.append({  "id": pid,
                             "name": name,
                             "image": image,
                             "types": types,
                             "ability": ability,
-                            "baseStats": base_stats}})
+                            "baseStats": base_stats})
     except:
         continue
 
@@ -42,5 +39,5 @@ print(pokemons)
 print(len(pokemons))
 
 
-with open('pokemons.json', 'w') as f:
+with open('pokemons.text', 'w') as f:
     f.write(str(pokemons))
