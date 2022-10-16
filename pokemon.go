@@ -35,6 +35,7 @@ func InitialMigration() {
 	fmt.Println("Successfully created database.")
 }
 
+// Returns all pokemons if no query string requested
 func getPokemon(c *gin.Context){
 	db, err = gorm.Open("sqlite3", "pokemon.db")
 	if err != nil {
@@ -43,27 +44,17 @@ func getPokemon(c *gin.Context){
 	}
 	defer db.Close()
 
-	var pokemons []Pokemon
-	db.Find(&pokemons)
-
-	c.IndentedJSON(http.StatusOK, pokemons)
-}
-
-func getPokemonByName(c *gin.Context){
-	db, err = gorm.Open("sqlite3", "pokemon.db")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to database.")
-	}
-	defer db.Close()
-
-	var pokemon Pokemon
-	db.Where("name = ?", c.Param("name")).Find(&pokemon)
-	if (pokemon.ID != 0) {
+	id, ok := c.GetQuery("name")
+	if (ok) {
+		var pokemon Pokemon
+		db.Where("name = ?", id).Find(&pokemon)
 		c.IndentedJSON(http.StatusOK, pokemon)
 	} else{
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Pokemon not found."})
+		var pokemons []Pokemon
+		db.Find(&pokemons)
+		c.IndentedJSON(http.StatusOK, pokemons)
 	}
+
 }
 
 func deletePokemon(c *gin.Context){
