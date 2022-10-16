@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/lariskovski/pokedex/api/initializers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Pokemon struct {
@@ -25,20 +24,7 @@ func createPokemon(c *gin.Context) {
 	if err := c.BindJSON(&pokemon); err != nil {
 		return
 	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
+	result, err := initializers.PokemonsCollection.InsertOne(initializers.Context, pokemon)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,41 +34,27 @@ func createPokemon(c *gin.Context) {
 
 // Returns all pokemons if no query string requested
 func getPokemon(c *gin.Context){
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	
 	// If query string name is present returns one value only
 	// or all values
 	name, ok := c.GetQuery("name")
 	if (ok) {
-		cursor, err := PokemonsCollection.Find(ctx, bson.M{"name": name})
+		cursor, err := initializers.PokemonsCollection.Find(initializers.Context, bson.M{"name": name})
 		if err != nil {
 			log.Fatal(err)
 		}
 		var pokemon []bson.M
-		if err = cursor.All(ctx, &pokemon); err != nil {
+		if err = cursor.All(initializers.Context, &pokemon); err != nil {
 			log.Fatal(err)
 		}
 		c.IndentedJSON(http.StatusOK, pokemon)
 
 	} else {
-		cursor, err := PokemonsCollection.Find(ctx, bson.M{})
+		cursor, err := initializers.PokemonsCollection.Find(initializers.Context, bson.M{})
 		if err != nil {
 			log.Fatal(err)
 		}
 		var pokemons []bson.M
-		if err = cursor.All(ctx, &pokemons); err != nil {
+		if err = cursor.All(initializers.Context, &pokemons); err != nil {
 			log.Fatal(err)
 		}
 		c.IndentedJSON(http.StatusOK, pokemons)
@@ -91,20 +63,6 @@ func getPokemon(c *gin.Context){
 
 
 func updatePokemon(c *gin.Context) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-
 	var json Pokemon
 	if err := c.BindJSON(&json); err != nil {
 		return
@@ -123,7 +81,7 @@ func updatePokemon(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	result, err := PokemonsCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: objId}} , update)
+	result, err := initializers.PokemonsCollection.UpdateOne(initializers.Context, bson.D{{Key: "_id", Value: objId}} , update)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -137,25 +95,11 @@ func updatePokemon(c *gin.Context) {
 
 
 func deletePokemon(c *gin.Context){
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	
 	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: objId }})
+	deleteResult, err := initializers.PokemonsCollection.DeleteOne(initializers.Context, bson.D{{Key: "_id", Value: objId }})
 	if err != nil {
 		log.Fatal(err)
 	}

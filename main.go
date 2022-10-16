@@ -2,12 +2,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"os"
+	"github.com/lariskovski/pokedex/api/initializers"
 )
 
-var (
-	mongoURI = os.Getenv("MONGODB_URI")
-)
+func init(){
+	initializers.LoadEnvVars()
+	initializers.ConnectToDB()
+}
 
 func main(){
 	router := gin.Default()
