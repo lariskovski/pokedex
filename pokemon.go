@@ -1,75 +1,22 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-	"gorm.io/datatypes"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var db *gorm.DB
-var err error
-
-
 type Pokemon struct {
-	gorm.Model
 	Name string `json:"name"`
-	Types datatypes.JSON `json:"types"`
+	Types []string `json:"types"`
 	Image string `json:"image"`
 	Ability string `json:"ability"`
-	BaseStats datatypes.JSON `json:"baseStats"`
-}
-
-func InitialMigration() {
-	db, err = gorm.Open("sqlite3", "pokemon.db")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to database.")
-	}
-	defer db.Close()
-	
-	db.AutoMigrate(&Pokemon{})
-	fmt.Println("Successfully created database.")
-}
-
-// Returns all pokemons if no query string requested
-func getPokemon(c *gin.Context){
-	db, err = gorm.Open("sqlite3", "pokemon.db")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to database.")
-	}
-	defer db.Close()
-
-	id, ok := c.GetQuery("name")
-	if (ok) {
-		var pokemon Pokemon
-		db.Where("name = ?", id).Find(&pokemon)
-		c.IndentedJSON(http.StatusOK, pokemon)
-	} else{
-		var pokemons []Pokemon
-		db.Find(&pokemons)
-		c.IndentedJSON(http.StatusOK, pokemons)
-	}
-
-}
-
-func deletePokemon(c *gin.Context){
-	db, err = gorm.Open("sqlite3", "pokemon.db")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to database.")
-	}
-	defer db.Close()
-
-	var pokemon Pokemon
-	db.Where("name = ?", c.Param("name")).Find(&pokemon)
-	db.Delete(&pokemon)
-
-	c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
+	BaseStats map[string]string `json:"baseStats"`
 }
 
 func createPokemon(c *gin.Context) {
@@ -78,46 +25,144 @@ func createPokemon(c *gin.Context) {
 	if err := c.BindJSON(&pokemon); err != nil {
 		return
 	}
-	db, err = gorm.Open("sqlite3", "pokemon.db")
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to database.")
+		log.Fatal(err)
 	}
-	defer db.Close()
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
 
-	c.IndentedJSON(http.StatusCreated, db.Create(&Pokemon{
-		Name: pokemon.Name,
-		Ability: pokemon.Ability,
-		Image: pokemon.Image,
-		Types: pokemon.Types,
-		BaseStats: pokemon.BaseStats,
-	}))
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
+	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.IndentedJSON(http.StatusCreated, result)
 }
 
-func updatePokemon(c *gin.Context) {
-	db, err = gorm.Open("sqlite3", "pokemon.db")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to database.")
-	}
-	defer db.Close()
 
-	var pokemon Pokemon
-	var json Pokemon
+// Returns all pokemons if no query string requested
+func getPokemon(c *gin.Context){
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
+
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
 	
+	// If query string name is present returns one value only
+	// or all values
+	name, ok := c.GetQuery("name")
+	if (ok) {
+		cursor, err := PokemonsCollection.Find(ctx, bson.M{"name": name})
+		if err != nil {
+			log.Fatal(err)
+		}
+		var pokemon []bson.M
+		if err = cursor.All(ctx, &pokemon); err != nil {
+			log.Fatal(err)
+		}
+		c.IndentedJSON(http.StatusOK, pokemon)
+
+	} else {
+		cursor, err := PokemonsCollection.Find(ctx, bson.M{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		var pokemons []bson.M
+		if err = cursor.All(ctx, &pokemons); err != nil {
+			log.Fatal(err)
+		}
+		c.IndentedJSON(http.StatusOK, pokemons)
+	}
+}
+
+
+func updatePokemon(c *gin.Context) {
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
+
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
+
+	var json Pokemon
 	if err := c.BindJSON(&json); err != nil {
 		return
 	}
+	update := bson.D{{Key: "$set",
+		 Value: bson.D{
+			{Key: "name", Value: json.Name},
+			{Key: "ability", Value: json.Ability},
+			{Key: "image", Value: json.Image},
+			{Key: "types", Value: json.Types},
+			{Key: "baseStats", Value: json.BaseStats},
+		},
+	}}
+		
+	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	result, err := PokemonsCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: objId}} , update)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	db.Where("name = ?", c.Param("id")).Find(&pokemon)
+	if result.MatchedCount != 0 {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon updated."})
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
+	}
+}
+
+
+func deletePokemon(c *gin.Context){
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
+
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
 	
-	db.Model(&pokemon).Select("name", "types", "ability", "image", "baseStats").Updates(Pokemon{
-		Name: json.Name,
-		Ability: json.Ability,
-		Image: json.Image,
-		Types: json.Types,
-		BaseStats: json.BaseStats,
-	})
+	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: objId }})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	c.IndentedJSON(http.StatusAccepted, json.BaseStats)
+	if deleteResult.DeletedCount != 0 {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
+	}
 }
