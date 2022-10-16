@@ -20,14 +20,10 @@ type Pokemon struct {
 
 func createPokemon(c *gin.Context) {
 	var pokemon Pokemon
-
 	if err := c.BindJSON(&pokemon); err != nil {
 		return
 	}
-	result, err := initializers.PokemonsCollection.InsertOne(initializers.Context, pokemon)
-	if err != nil {
-		log.Fatal(err)
-	}
+	result := pokemon.Create()
 	c.IndentedJSON(http.StatusCreated, result)
 }
 
@@ -37,27 +33,14 @@ func getPokemon(c *gin.Context){
 	// If query string name is present returns one value only
 	// or all values
 	name, ok := c.GetQuery("name")
+	var pokemon Pokemon
 	if (ok) {
-		cursor, err := initializers.PokemonsCollection.Find(initializers.Context, bson.M{"name": name})
-		if err != nil {
-			log.Fatal(err)
-		}
-		var pokemon []bson.M
-		if err = cursor.All(initializers.Context, &pokemon); err != nil {
-			log.Fatal(err)
-		}
-		c.IndentedJSON(http.StatusOK, pokemon)
+		result := pokemon.GetByName(name)
+		c.IndentedJSON(http.StatusOK, result)
 
 	} else {
-		cursor, err := initializers.PokemonsCollection.Find(initializers.Context, bson.M{})
-		if err != nil {
-			log.Fatal(err)
-		}
-		var pokemons []bson.M
-		if err = cursor.All(initializers.Context, &pokemons); err != nil {
-			log.Fatal(err)
-		}
-		c.IndentedJSON(http.StatusOK, pokemons)
+		result := pokemon.GetAll()
+		c.IndentedJSON(http.StatusOK, result)
 	}
 }
 
