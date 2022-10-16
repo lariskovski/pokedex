@@ -1,4 +1,4 @@
-module github.com/lariskovski/pokemon
+module github.com/lariskovski/pokedex/api
 
 go 1.14
 
