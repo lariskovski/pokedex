@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "fmt"
 	"context"
 	"log"
 	"net/http"
@@ -12,14 +11,43 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-
-
 type Pokemon struct {
 	Name string `json:"name"`
 	Types []string `json:"types"`
 	Image string `json:"image"`
 	Ability string `json:"ability"`
 	BaseStats map[string]string `json:"baseStats"`
+}
+
+func createPokemon(c *gin.Context) {
+	var pokemon Pokemon
+
+	if err := c.BindJSON(&pokemon); err != nil {
+		return
+	}
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
+
+	pokedexDB := client.Database("pokedex")
+	// err = pokedexDB.CreateCollection(ctx, "pokemon")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	PokemonsCollection := pokedexDB.Collection("pokemon")
+	// defer pokemonsCollection.Drop(ctx)
+	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.IndentedJSON(http.StatusCreated, result)
 }
 
 
@@ -66,61 +94,6 @@ func getPokemon(c *gin.Context){
 	}
 }
 
-func deletePokemon(c *gin.Context){
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	
-	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.M{"name": c.Param("name")})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if deleteResult != nil {
-		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
-	}
-}
-
-func createPokemon(c *gin.Context) {
-	var pokemon Pokemon
-
-	if err := c.BindJSON(&pokemon); err != nil {
-		return
-	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	// err = pokedexDB.CreateCollection(ctx, "pokemon")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	// defer pokemonsCollection.Drop(ctx)
-	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.IndentedJSON(http.StatusCreated, result)
-}
 
 func updatePokemon(c *gin.Context) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
@@ -161,4 +134,30 @@ func updatePokemon(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
 	}
 
+}
+
+
+func deletePokemon(c *gin.Context){
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
+
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
+	
+	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.M{"name": c.Param("name")})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if deleteResult != nil {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
+	}
 }

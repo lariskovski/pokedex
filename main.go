@@ -14,8 +14,8 @@ func main(){
 	router := gin.Default()
 	router.POST("/pokemons", createPokemon)
 	router.GET("/pokemons", getPokemon)
-	router.DELETE("/pokemons/:name", deletePokemon)
 	router.PUT("/pokemons/:name", updatePokemon)
+	router.DELETE("/pokemons/:name", deletePokemon)
 	router.Run("localhost:8080")
 
 
