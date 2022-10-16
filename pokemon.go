@@ -66,6 +66,21 @@ func getPokemonByName(c *gin.Context){
 	}
 }
 
+func deletePokemon(c *gin.Context){
+	db, err = gorm.Open("sqlite3", "pokemon.db")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("Failed to connect to database.")
+	}
+	defer db.Close()
+
+	var pokemon Pokemon
+	db.Where("name = ?", c.Param("name")).Find(&pokemon)
+	db.Delete(&pokemon)
+
+	c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
+}
+
 func createPokemon(c *gin.Context) {
 	var pokemon Pokemon
 
