@@ -15,7 +15,7 @@ func main(){
 	router.POST("/pokemons", createPokemon)
 	router.GET("/pokemons", getPokemon)
 	router.DELETE("/pokemons/:name", deletePokemon)
-	// router.PUT("/pokemons/:id", updatePokemon)
+	router.PUT("/pokemons/:name", updatePokemon)
 	router.Run("localhost:8080")
 
 

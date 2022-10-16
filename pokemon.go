@@ -2,13 +2,14 @@ package main
 
 import (
 	// "fmt"
-	"net/http"
 	"context"
 	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"github.com/gin-gonic/gin"
 )
 
 
@@ -121,30 +122,43 @@ func createPokemon(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, result)
 }
 
-// func updatePokemon(c *gin.Context) {
-// 	db, err = gorm.Open("sqlite3", "pokemon.db")
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 		panic("Failed to connect to database.")
-// 	}
-// 	defer db.Close()
+func updatePokemon(c *gin.Context) {
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
 
-// 	var pokemon Pokemon
-// 	var json Pokemon
-	
-// 	if err := c.BindJSON(&json); err != nil {
-// 		return
-// 	}
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
 
-// 	db.Where("name = ?", c.Param("id")).Find(&pokemon)
-	
-// 	db.Model(&pokemon).Select("name", "types", "ability", "image", "baseStats").Updates(Pokemon{
-// 		Name: json.Name,
-// 		Ability: json.Ability,
-// 		Image: json.Image,
-// 		Types: json.Types,
-// 		BaseStats: json.BaseStats,
-// 	})
+	var json Pokemon
+	if err := c.BindJSON(&json); err != nil {
+		return
+	}
+	update := bson.D{{Key: "$set",
+		 Value: bson.D{
+			{Key: "name", Value: json.Name},
+			{Key: "ability", Value: json.Ability},
+			{Key: "image", Value: json.Image},
+			{Key: "types", Value: json.Types},
+			{Key: "baseStats", Value: json.BaseStats},
+		},
+	}}
+	result, err := PokemonsCollection.UpdateOne(ctx, bson.D{{Key: "name", Value: c.Param("name")}} , update)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	c.IndentedJSON(http.StatusAccepted, json.BaseStats)
-// }
+	if result.MatchedCount != 0 {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon updated."})
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
+	}
+
+}
