@@ -94,3 +94,9 @@ Content-Length: 364
         "speedDefense": "64"
     }
 ~~~~
+
+### PUT Requets
+
+~~~~
+curl -X PUT localhost:8080/pokemons/1 -d @put.json
+~~~~
