@@ -13,7 +13,7 @@ type Repository interface {
     GetAll() []primitive.M
     GetByName() []bson.M
 	Update() bool
-	// Delete() *mongo.DeleteResult
+	Delete() bool
 }
 
 func (p Pokemon) Create() *mongo.InsertOneResult {
@@ -73,4 +73,22 @@ func (p Pokemon) Update(json Pokemon, id string) bool {
 		return true
 	}
 	return false
+}
+
+func (p Pokemon) Delete(id string) bool {
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	deleteResult, err := initializers.PokemonsCollection.DeleteOne(
+		initializers.Context, bson.D{{Key: "_id", Value: objId }})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if deleteResult.DeletedCount != 0 {
+		return true
+	} else {
+		return false
+	}
 }

@@ -1,13 +1,9 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lariskovski/pokedex/api/initializers"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Pokemon struct {
@@ -62,16 +58,10 @@ func updatePokemon(c *gin.Context) {
 
 
 func deletePokemon(c *gin.Context){
-	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	deleteResult, err := initializers.PokemonsCollection.DeleteOne(initializers.Context, bson.D{{Key: "_id", Value: objId }})
-	if err != nil {
-		log.Fatal(err)
-	}
+	var pokemon Pokemon
 
-	if deleteResult.DeletedCount != 0 {
+	result := pokemon.Delete(c.Param("id"))
+	if result {
 		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
 	} else {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
