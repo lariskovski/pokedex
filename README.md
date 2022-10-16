@@ -1,6 +1,8 @@
 # Pokemons Go API 
 
-Project was made to refresh my Python web scrapping skills and learn Go. It scraps a web page to get Pokemon data and serves it with Go CRUD Pokemons API. Go base resource: [Tech With Tim tutorial](https://www.youtube.com/watch?v=bj77B59nkTQ)
+Project was made to refresh my Python web scrapping skills and learn Go. It scraps a web page to get Pokemon data and serves it with Go CRUD Pokemons API. Go base resource:
+- [Tech With Tim tutorial](https://www.youtube.com/watch?v=bj77B59nkTQ)
+- [Creating a Go API using an ORM Tutorial](https://www.youtube.com/watch?v=VAGodyl84OY)
 
 ## Locally Running the API
 
