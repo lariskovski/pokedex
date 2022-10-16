@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/lariskovski/pokedex/api/initializers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -22,7 +24,7 @@ func createPokemon(c *gin.Context) {
 	if err := c.BindJSON(&pokemon); err != nil {
 		return
 	}
-	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
+	result, err := initializers.PokemonsCollection.InsertOne(initializers.Context, pokemon)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,23 +38,23 @@ func getPokemon(c *gin.Context){
 	// or all values
 	name, ok := c.GetQuery("name")
 	if (ok) {
-		cursor, err := PokemonsCollection.Find(ctx, bson.M{"name": name})
+		cursor, err := initializers.PokemonsCollection.Find(initializers.Context, bson.M{"name": name})
 		if err != nil {
 			log.Fatal(err)
 		}
 		var pokemon []bson.M
-		if err = cursor.All(ctx, &pokemon); err != nil {
+		if err = cursor.All(initializers.Context, &pokemon); err != nil {
 			log.Fatal(err)
 		}
 		c.IndentedJSON(http.StatusOK, pokemon)
 
 	} else {
-		cursor, err := PokemonsCollection.Find(ctx, bson.M{})
+		cursor, err := initializers.PokemonsCollection.Find(initializers.Context, bson.M{})
 		if err != nil {
 			log.Fatal(err)
 		}
 		var pokemons []bson.M
-		if err = cursor.All(ctx, &pokemons); err != nil {
+		if err = cursor.All(initializers.Context, &pokemons); err != nil {
 			log.Fatal(err)
 		}
 		c.IndentedJSON(http.StatusOK, pokemons)
@@ -79,7 +81,7 @@ func updatePokemon(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	result, err := PokemonsCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: objId}} , update)
+	result, err := initializers.PokemonsCollection.UpdateOne(initializers.Context, bson.D{{Key: "_id", Value: objId}} , update)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,7 +99,7 @@ func deletePokemon(c *gin.Context){
 	if err != nil {
 		log.Fatal(err)
 	}
-	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: objId }})
+	deleteResult, err := initializers.PokemonsCollection.DeleteOne(initializers.Context, bson.D{{Key: "_id", Value: objId }})
 	if err != nil {
 		log.Fatal(err)
 	}
