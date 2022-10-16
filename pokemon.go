@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -152,12 +153,18 @@ func deletePokemon(c *gin.Context){
 	pokedexDB := client.Database("pokedex")
 	PokemonsCollection := pokedexDB.Collection("pokemon")
 	
-	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.M{"name": c.Param("name")})
+	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.D{{Key: "_id", Value: objId }})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if deleteResult != nil {
+	if deleteResult.DeletedCount != 0 {
 		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
 	}
 }
