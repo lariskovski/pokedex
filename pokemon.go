@@ -65,20 +65,30 @@ func getPokemon(c *gin.Context){
 	}
 }
 
-// func deletePokemon(c *gin.Context){
-// 	db, err = gorm.Open("sqlite3", "pokemon.db")
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 		panic("Failed to connect to database.")
-// 	}
-// 	defer db.Close()
+func deletePokemon(c *gin.Context){
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
 
-// 	var pokemon Pokemon
-// 	db.Where("name = ?", c.Param("name")).Find(&pokemon)
-// 	db.Delete(&pokemon)
+	pokedexDB := client.Database("pokedex")
+	PokemonsCollection := pokedexDB.Collection("pokemon")
+	
+	deleteResult, err := PokemonsCollection.DeleteOne(ctx, bson.M{"name": c.Param("name")})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
-// }
+	if deleteResult != nil {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon deleted."})
+	}
+}
 
 func createPokemon(c *gin.Context) {
 	var pokemon Pokemon
