@@ -124,7 +124,12 @@ func updatePokemon(c *gin.Context) {
 			{Key: "baseStats", Value: json.BaseStats},
 		},
 	}}
-	result, err := PokemonsCollection.UpdateOne(ctx, bson.D{{Key: "name", Value: c.Param("name")}} , update)
+		
+	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	result, err := PokemonsCollection.UpdateOne(ctx, bson.D{{Key: "_id", Value: objId}} , update)
 	if err != nil {
 		log.Fatal(err)
 	}
