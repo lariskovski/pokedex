@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -38,12 +37,7 @@ func createPokemon(c *gin.Context) {
 	defer client.Disconnect(ctx)
 
 	pokedexDB := client.Database("pokedex")
-	// err = pokedexDB.CreateCollection(ctx, "pokemon")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 	PokemonsCollection := pokedexDB.Collection("pokemon")
-	// defer pokemonsCollection.Drop(ctx)
 	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
 	if err != nil {
 		log.Fatal(err)
@@ -139,7 +133,6 @@ func updatePokemon(c *gin.Context) {
 	} else {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
 	}
-
 }
 
 
