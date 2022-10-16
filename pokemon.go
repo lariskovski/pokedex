@@ -94,3 +94,30 @@ func createPokemon(c *gin.Context) {
 	}))
 }
 
+func updatePokemon(c *gin.Context) {
+	db, err = gorm.Open("sqlite3", "pokemon.db")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("Failed to connect to database.")
+	}
+	defer db.Close()
+
+	var pokemon Pokemon
+	var json Pokemon
+	
+	if err := c.BindJSON(&json); err != nil {
+		return
+	}
+
+	db.Where("name = ?", c.Param("id")).Find(&pokemon)
+	
+	db.Model(&pokemon).Select("name", "types", "ability", "image", "baseStats").Updates(Pokemon{
+		Name: json.Name,
+		Ability: json.Ability,
+		Image: json.Image,
+		Types: json.Types,
+		BaseStats: json.BaseStats,
+	})
+
+	c.IndentedJSON(http.StatusAccepted, json.BaseStats)
+}
