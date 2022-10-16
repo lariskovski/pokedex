@@ -46,30 +46,14 @@ func getPokemon(c *gin.Context){
 
 
 func updatePokemon(c *gin.Context) {
+	var pokemon Pokemon
 	var json Pokemon
 	if err := c.BindJSON(&json); err != nil {
 		return
 	}
-	update := bson.D{{Key: "$set",
-		 Value: bson.D{
-			{Key: "name", Value: json.Name},
-			{Key: "ability", Value: json.Ability},
-			{Key: "image", Value: json.Image},
-			{Key: "types", Value: json.Types},
-			{Key: "baseStats", Value: json.BaseStats},
-		},
-	}}
-		
-	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	result, err := initializers.PokemonsCollection.UpdateOne(initializers.Context, bson.D{{Key: "_id", Value: objId}} , update)
-	if err != nil {
-		log.Fatal(err)
-	}
+	result := pokemon.Update(json, c.Param("id"))
 
-	if result.MatchedCount != 0 {
+	if result {
 		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon updated."})
 	} else {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
