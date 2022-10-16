@@ -49,6 +49,23 @@ func getPokemon(c *gin.Context){
 	c.IndentedJSON(http.StatusOK, pokemons)
 }
 
+func getPokemonByName(c *gin.Context){
+	db, err = gorm.Open("sqlite3", "pokemon.db")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("Failed to connect to database.")
+	}
+	defer db.Close()
+
+	var pokemon Pokemon
+	db.Where("name = ?", c.Param("name")).Find(&pokemon)
+	if (pokemon.ID != 0) {
+		c.IndentedJSON(http.StatusOK, pokemon)
+	} else{
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Pokemon not found."})
+	}
+}
+
 func createPokemon(c *gin.Context) {
 	var pokemon Pokemon
 
