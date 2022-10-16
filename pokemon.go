@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Pokemon struct {
@@ -25,19 +22,6 @@ func createPokemon(c *gin.Context) {
 	if err := c.BindJSON(&pokemon); err != nil {
 		return
 	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
 	result, err := PokemonsCollection.InsertOne(ctx, pokemon)
 	if err != nil {
 		log.Fatal(err)
@@ -48,20 +32,6 @@ func createPokemon(c *gin.Context) {
 
 // Returns all pokemons if no query string requested
 func getPokemon(c *gin.Context){
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	
 	// If query string name is present returns one value only
 	// or all values
 	name, ok := c.GetQuery("name")
@@ -91,20 +61,6 @@ func getPokemon(c *gin.Context){
 
 
 func updatePokemon(c *gin.Context) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-
 	var json Pokemon
 	if err := c.BindJSON(&json); err != nil {
 		return
@@ -137,20 +93,6 @@ func updatePokemon(c *gin.Context) {
 
 
 func deletePokemon(c *gin.Context){
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	pokedexDB := client.Database("pokedex")
-	PokemonsCollection := pokedexDB.Collection("pokemon")
-	
 	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		log.Fatal(err)
