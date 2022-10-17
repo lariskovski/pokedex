@@ -31,3 +31,21 @@ func (p *PokemonRepositoryMemory) Create(pokemon entity.Pokemon) (entity.Pokemon
 	p.db.Pokemons = append(p.db.Pokemons, pokemon)
 	return pokemon, nil
 }
+func (p *PokemonRepositoryMemory) Update(pokemon entity.Pokemon) (entity.Pokemon, error){
+	for index, poke := range p.db.Pokemons{
+		if poke.Name == pokemon.Name {
+			p.db.Pokemons[index] = pokemon
+			return pokemon, nil
+		}
+	}
+	return entity.Pokemon{}, errors.New("Pokemon not found.")
+}
+func (p *PokemonRepositoryMemory) Delete(pokemon entity.Pokemon) bool {
+	for index, poke := range p.db.Pokemons{
+		if poke.Name == pokemon.Name {
+			p.db.Pokemons[index] = entity.Pokemon{}
+			return true
+		}
+	}
+	return false
+}

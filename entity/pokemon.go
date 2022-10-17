@@ -3,6 +3,8 @@ package entity
 type PokemonRepository interface {
 	Get(name string) (Pokemon, error)
 	Create(pokemon Pokemon) (Pokemon, error)
+	Update(pokemon Pokemon) (Pokemon, error)
+	Delete(pokemon Pokemon) bool
 }
 
 type Pokemon struct {
