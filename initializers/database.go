@@ -5,12 +5,15 @@ import (
 	"log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/lariskovski/pokedex/api/repository"
+	"github.com/lariskovski/pokedex/api/service"
 )
 
 
 var (
 	PokemonsCollection *mongo.Collection
 	Context context.Context
+	Service *service.PokemonService
 )
 
 func ConnectToDB(){
@@ -25,4 +28,8 @@ func ConnectToDB(){
 	}
 	pokedexDB := client.Database("pokedex")
 	PokemonsCollection = pokedexDB.Collection("pokemon")
+
+	db := PokemonsCollection
+	repository := repository.NewPokemonRepositoryMongoDb(db)
+	Service = service.NewPokemonService(repository)
 }
