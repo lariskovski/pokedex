@@ -7,7 +7,7 @@ import (
 type PokemonRepository interface {
 	Get(name string) (Pokemon, error)
 	Create(pokemon Pokemon) (Pokemon, error)
-	// Update(pokemon Pokemon) (Pokemon, error)
+	Update(id string, pokemon Pokemon) (Pokemon, error)
 	Delete(id string) error
 }
 

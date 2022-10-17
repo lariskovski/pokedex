@@ -32,6 +32,21 @@ func (p *PokemonService) Create(name string, ability string, types []string, ima
 	return result, err
 }
 
+func (p *PokemonService) Update(id string, name string, ability string, types []string, image string, baseStats map[string]string) (entity.Pokemon, error){
+	pokemon := entity.NewPokemon()
+	pokemon.Name = name
+	pokemon.Ability = ability
+	pokemon.Image = image
+	pokemon.Types = types
+	pokemon.BaseStats = baseStats
+	result, err := p.Repository.Update(id, *pokemon)
+
+	if err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
 func (p *PokemonService) Delete(id string) (error){
 	return p.Repository.Delete(id)
 }

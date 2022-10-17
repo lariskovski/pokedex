@@ -65,3 +65,26 @@ func DeletePokemon(c *gin.Context){
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Error"})
 	}
 }
+
+
+func UpdatePokemon(c *gin.Context) {
+	db := initializers.PokemonsCollection
+	repository := repository.NewPokemonRepositoryMongoDb(db)
+	service := service.NewPokemonService(repository)
+
+	var pokemon entity.Pokemon
+	if err := c.BindJSON(&pokemon); err != nil {
+		return
+	}
+	_, err := service.Update(c.Param("id"), pokemon.Name,
+	pokemon.Ability,
+	pokemon.Types,
+	pokemon.Image,
+	pokemon.BaseStats,)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
+	} else {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Pokemon updated."})
+	}
+}
