@@ -12,10 +12,10 @@ func NewPokemonService(repository entity.PokemonRepository) *PokemonService {
 	return &PokemonService{Repository: repository}
 }
 
-func (p *PokemonService) findByName(name string) (entity.Pokemon, error){
+func (p *PokemonService) FindByName(name string) (entity.Pokemon, error){
 	pokemon, err := p.Repository.Get(name)
 	if err != nil {
-		return entity.Pokemon{}, err
+		return pokemon, err
 	}
 	return pokemon, nil
 }

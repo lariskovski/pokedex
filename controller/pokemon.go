@@ -6,15 +6,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lariskovski/pokedex/api/entity"
+	"github.com/lariskovski/pokedex/api/initializers"
 	"github.com/lariskovski/pokedex/api/repository"
 	"github.com/lariskovski/pokedex/api/service"
 )
 
 func CreatePokemon(c *gin.Context) {
-	db := repository.PokemonsMemoryDb{Pokemons: []entity.Pokemon{}}
-	repositoryMemory := repository.NewPokemonRepositoryMemory(db)
-	service := service.NewPokemonService(repositoryMemory)
+	// db := repository.PokemonsMemoryDb{Pokemons: []entity.Pokemon{}}
+	// repositoryMemory := repository.NewPokemonRepositoryMemory(db)
+	// service := service.NewPokemonService(repositoryMemory)
 
+	db := initializers.PokemonsCollection
+	repository := repository.NewPokemonRepositoryMongoDb(db)
+	service := service.NewPokemonService(repository)
 	var pokemon entity.Pokemon
 
 	if err := c.BindJSON(&pokemon); err != nil {
@@ -31,5 +35,21 @@ func CreatePokemon(c *gin.Context) {
 		log.Fatal(err)
 	}
 	c.IndentedJSON(http.StatusCreated, result)
+}
+
+func GetPokemon(c *gin.Context){
+	db := initializers.PokemonsCollection
+	repository := repository.NewPokemonRepositoryMongoDb(db)
+	service := service.NewPokemonService(repository)
+
+	name, ok := c.GetQuery("name")
+	if (ok) {
+		result, err := service.FindByName(name)
+		if err != nil{
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No match found."})
+			return
+		}
+		c.IndentedJSON(http.StatusOK, result)
+	}
 }
 
