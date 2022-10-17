@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lariskovski/pokedex/api/controller"
 	"github.com/lariskovski/pokedex/api/initializers"
 )
 
@@ -12,9 +13,9 @@ func init(){
 
 func main(){
 	router := gin.Default()
-	router.POST("/pokemons", createPokemon)
-	router.GET("/pokemons", getPokemon)
-	router.PUT("/pokemons/:id", updatePokemon)
-	router.DELETE("/pokemons/:id", deletePokemon)
+	router.POST("/pokemons", controller.CreatePokemon)
+	router.GET("/pokemons", controller.GetPokemon)
+	router.PUT("/pokemons/:id", controller.UpdatePokemon)
+	router.DELETE("/pokemons/:id", controller.DeletePokemon)
 	router.Run("localhost:8080")
 }
