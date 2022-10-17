@@ -53,3 +53,15 @@ func GetPokemon(c *gin.Context){
 	}
 }
 
+
+func DeletePokemon(c *gin.Context){
+	db := initializers.PokemonsCollection
+	repository := repository.NewPokemonRepositoryMongoDb(db)
+	service := service.NewPokemonService(repository)
+
+	if err := service.Delete(c.Param("id")); err == nil {
+		c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Accepted"})
+	} else {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Error"})
+	}
+}

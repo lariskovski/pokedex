@@ -31,3 +31,7 @@ func (p *PokemonService) Create(name string, ability string, types []string, ima
 	result, err := p.Repository.Create(*pokemon)
 	return result, err
 }
+
+func (p *PokemonService) Delete(id string) (error){
+	return p.Repository.Delete(id)
+}

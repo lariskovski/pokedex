@@ -1,13 +1,18 @@
 package entity
 
+import (
+	uuid "github.com/satori/go.uuid"
+)
+
 type PokemonRepository interface {
 	Get(name string) (Pokemon, error)
 	Create(pokemon Pokemon) (Pokemon, error)
 	// Update(pokemon Pokemon) (Pokemon, error)
-	// Delete(pokemon Pokemon) bool
+	Delete(id string) error
 }
 
 type Pokemon struct {
+	Id string `json:"id"`
 	Name string `json:"name"`
 	Types []string `json:"types"`
 	Image string `json:"image"`
@@ -16,6 +21,8 @@ type Pokemon struct {
 }
 
 func NewPokemon() *Pokemon {
-	pokemon := Pokemon {}
+	pokemon := Pokemon {
+		Id: uuid.NewV4().String(),
+	}
 	return &pokemon
 }

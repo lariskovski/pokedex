@@ -16,6 +16,6 @@ func main(){
 	router.POST("/pokemons", controller.CreatePokemon)
 	router.GET("/pokemons", controller.GetPokemon)
 	// router.PUT("/pokemons/:id", updatePokemon)
-	// router.DELETE("/pokemons/:id", deletePokemon)
+	router.DELETE("/pokemons/:id", controller.DeletePokemon)
 	router.Run("localhost:8080")
 }

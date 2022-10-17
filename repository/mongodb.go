@@ -29,6 +29,16 @@ func (p *PokemonRepositoryMongoDb) Get(name string) (entity.Pokemon, error){
 }
 
 
-// func (p *PokemonRepositoryMongoDb) Update(pokemon entity.Pokemon) (entity.Pokemon, error){}
+// func (p *PokemonRepositoryMongoDb) Update(pokemon entity.Pokemon) (entity.Pokemon, error){
 
-// func (p *PokemonRepositoryMongoDb) Delete(pokemon entity.Pokemon) bool {}
+// }
+
+func (p *PokemonRepositoryMongoDb) Delete(id string) error {
+	deleteResult, err := p.db.DeleteOne(
+		p.ctx, bson.D{{Key: "id", Value: id }})
+	if deleteResult.DeletedCount != 0 {
+		return nil
+	} else {
+		return err
+	}
+}
