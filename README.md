@@ -12,7 +12,9 @@ Project was made to refresh my Python web scrapping skills and learn Go. It scra
 
 ## Preparing API to Lambda
 
-``make get/main.zip``
+Run the Makefile for each API method/directory. Example:
+
+``make METHOD=get``
 
 Source: [SHRINK YOUR GO BINARIES WITH THIS ONE WEIRD TRICK](https://words.filippo.io/shrink-your-go-binaries-with-this-one-weird-trick/)
 
