@@ -70,11 +70,11 @@ func getPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 			log.Fatal(err)
 		}
 		// Transform mongo response into json
-		body, err := json.Marshal(pokemons)
+		json, err := json.Marshal(pokemons)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return events.APIGatewayProxyResponse{StatusCode: 200, Body: string(body)}, nil
+		return events.APIGatewayProxyResponse{StatusCode: 200, Body: string(json)}, nil
 	}
 }
 
