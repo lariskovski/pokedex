@@ -4,9 +4,17 @@ Project was made to refresh my Python web scrapping skills and learn Go. It scra
 - [Tech With Tim tutorial](https://www.youtube.com/watch?v=bj77B59nkTQ)
 - [Creating a Go API using an ORM Tutorial](https://www.youtube.com/watch?v=VAGodyl84OY)
 
-## Locally Running the API
+## Requirements
 
-`` go run .``
+- [upx](https://github.com/upx/upx/releases)
+
+- [Go 1.19](https://go.dev/dl/)
+
+## Preparing API to Lambda
+
+``make get/main.zip``
+
+Source: [SHRINK YOUR GO BINARIES WITH THIS ONE WEIRD TRICK](https://words.filippo.io/shrink-your-go-binaries-with-this-one-weird-trick/)
 
 ## Requests Examples
 
