@@ -1,26 +1,24 @@
 GO=/usr/local/go/bin/go
-GOFLAGS=-ldflags="-s -w"
+LDFLAGS=-ldflags="-s -w"
 
-BINARY_NAME=main
-PATH=get
+METHOD=get
 
-.PHONY: listpath compile run zip clean
+SRC_DIR=$(METHOD)
+OBJ_DIR=obj
+SRC_FILES=$(wildcard $(SRC_DIR)/*)
+OBJ_FILES:=$(patsubst $(SRC_DIR)/%.go,$(OBJ_DIR)/%,$(SRC_FILES))
 
-listpath:
-	@/bin/echo $(shell echo $$PATH)
+.PHONY: ${SRC_FILES}
 
-get/main: get/main.go
-	@GOARCH=amd64 GOOS=linux ${GO} build ${GOFLAGS} -o $@ $^
+all: $(OBJ_FILES)
+
+$(OBJ_FILES): $(SRC_FILES)
+	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o $@ $<
 	@/usr/bin/upx --brute $@
 
-run: compile
-	@./${PATH}${BINARY_NAME}
-
-get/main.zip: compile
-	@/usr/bin/zip $@ ${PATH}/${BINARY_NAME}
+zip:
+	@find obj -maxdepth 1 -type f -execdir zip '{}.zip' '{}' \;
 
 clean:
 	@${GO} clean
-	@/usr/bin/rm -f ${PATH}/${BINARY_NAME}
-	@/usr/bin/rm -f ${PATH}/${BINARY_NAME}.upx
-	@/usr/bin/rm -f ${PATH}/${BINARY_NAME}.zip
+	@/usr/bin/rm -f ${OBJ_DIR}/*
