@@ -1,16 +1,16 @@
 package main
 
 import (
-	"os"
-	"log"
 	"context"
 	"encoding/json"
-	
+	"log"
+	"os"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/bson"
-	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-lambda-go/events"
 )
 
 type Pokemon struct {
@@ -46,18 +46,20 @@ func getPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 	// or all values
 	name := request.QueryStringParameters["name"]
 	if (name != "") {
-		result, err := PokemonsCollection.Find(Context, bson.M{"name": name})
-		var pokemons []Pokemon
-		if err = result.All(Context, &pokemons); err != nil {
-			log.Fatal(err)
+		var pokemon Pokemon
+		err := PokemonsCollection.FindOne(Context, bson.M{"name": name}).Decode(&pokemon)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				// This error means your query did not match any documents.
+				return events.APIGatewayProxyResponse{StatusCode: 404}, nil
+			}
 		}
-		// Transform mongo response into json
-		body, err := json.Marshal(pokemons)
+		// Transform Mongo response into json
+		json, err := json.Marshal(pokemon)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return events.APIGatewayProxyResponse{StatusCode: 200, Body: string(body)}, nil
-
+		return events.APIGatewayProxyResponse{StatusCode: 200, Body: string(json)}, nil
 	} else {
 		result, err := PokemonsCollection.Find(Context, bson.M{})
 		if err != nil {
