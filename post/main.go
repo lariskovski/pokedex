@@ -1,16 +1,13 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
-	"os"
 
+	db "github.com/lariskovski/pokedex/api/commons"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"go.mongodb.org/mongo-driver/mongo"
 	uuid "github.com/satori/go.uuid"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Pokemon struct {
@@ -26,33 +23,23 @@ type Response struct {
 	Message string `json:"message"`
 }
 
+func init(){
+	db.Connect()
+}
+
 func main() {
 	lambda.Start(postPokemon)
 }
 
-
-// Returns all pokemons if no query string requested
 func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	body := request.Body
 	if !(body == "" || body == "{}") {
-		// Mongo cofig
-		client, err := mongo.NewClient(options.Client().ApplyURI( os.Getenv("MONGODB_URI")))
-		if err != nil {
-			log.Fatal(err)
-		}
-		Context := context.Background()
-		err = client.Connect(Context)
-		if err != nil {
-			log.Fatal(err)
-		}
-		PokemonsCollection := client.Database("pokedex").Collection("pokemon")
-
 		// Transforms request body json into Pokemon struct
 		var pokemon Pokemon
 		json.Unmarshal([]byte(request.Body), &pokemon)
 		pokemon.Id = uuid.NewV4().String()
 	
-		_, err = PokemonsCollection.InsertOne(Context, pokemon)
+		_, err := db.Collection.InsertOne(db.Context, pokemon)
 		if err != nil {
 			log.Fatal(err)
 		}

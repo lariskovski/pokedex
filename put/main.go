@@ -1,16 +1,14 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
-	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	db "github.com/lariskovski/pokedex/api/commons"
 )
 
 type Pokemon struct {
@@ -26,28 +24,19 @@ type Response struct {
 	Message string `json:"message"`
 }
 
+func init(){
+	db.Connect()
+}
+
 func main() {
 	lambda.Start(putPokemon)
 }
-
 
 func putPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Name is not null if there is the name path on the API
 	// PUT /pokemons/{name}
 	name := request.PathParameters["name"]
 	if name != "" {
-		// MongoDB config
-		client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
-		if err != nil {
-			log.Fatal(err)
-		}
-		Context := context.Background()
-		err = client.Connect(Context)
-		if err != nil {
-			log.Fatal(err)
-		}
-		PokemonsCollection := client.Database("pokedex").Collection("pokemon")
-		
 		// Transforms request body json into Pokemon struct
 		var pokemon Pokemon
 		json.Unmarshal([]byte(request.Body), &pokemon)
@@ -62,7 +51,7 @@ func putPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRe
 		}}
 
 		// Updates object and returns the new one into pokemon
-		err = PokemonsCollection.FindOneAndUpdate(Context, bson.D{{Key: "name", Value: name}}, update).Decode(&pokemon)
+		err := db.Collection.FindOneAndUpdate(db.Context, bson.D{{Key: "name", Value: name}}, update).Decode(&pokemon)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				// This error means your query did not match any documents.

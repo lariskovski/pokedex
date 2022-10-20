@@ -1,20 +1,21 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
-	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	db "github.com/lariskovski/pokedex/api/commons"
 )
 
 type Response struct {
 	Message string `json:"message"`
+}
+
+func init(){
+	db.Connect()
 }
 
 func main() {
@@ -23,22 +24,9 @@ func main() {
 
 
 func deletePokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	mongoURI := os.Getenv("MONGODB_URI")
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	Context := context.Background()
-	err = client.Connect(Context)
-	if err != nil {
-		log.Fatal(err)
-	}
-	PokemonsCollection := client.Database("pokedex").Collection("pokemon")
-	
 	name := request.PathParameters["name"]
-
 	if name != "" {
-		deleteResult, err := PokemonsCollection.DeleteOne(Context, bson.D{{Key: "name", Value: name }})
+		deleteResult, err := db.Collection.DeleteOne(db.Context, bson.D{{Key: "name", Value: name }})
 		if err != nil {
 			log.Fatal(err)
 		}
