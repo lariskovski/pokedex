@@ -6,7 +6,7 @@ METHOD=get
 SRC_DIR=$(METHOD)
 OBJ_DIR=$(SRC_DIR)
 ZIP_DIR=zip
-SRC_FILES=$(wildcard $(SRC_DIR)/*)
+SRC_FILES=$(wildcard $(SRC_DIR)/*.go)
 OBJ_FILES:=$(patsubst $(SRC_DIR)/%.go,$(OBJ_DIR)/%,$(SRC_FILES))
 
 .PHONY: ${SRC_FILES} zip
@@ -22,4 +22,4 @@ $(OBJ_FILES): $(SRC_FILES)
 clean:
 	@${GO} clean
 	@/usr/bin/rm -f ${ZIP_DIR}/*
-	@ find . -type f -name "main" -exec rm -f {} \;
+	@ find . -type f  \( -name "main" -o -name "main.upx" \) -exec rm -f {} \;
