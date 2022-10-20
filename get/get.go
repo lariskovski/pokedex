@@ -14,6 +14,7 @@ import (
 )
 
 type Pokemon struct {
+	Id string `json:"id"`
 	Name string `json:"name"`
 	Types []string `json:"types"`
 	Image string `json:"image"`

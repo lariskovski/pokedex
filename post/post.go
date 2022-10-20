@@ -9,10 +9,12 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"go.mongodb.org/mongo-driver/mongo"
+	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Pokemon struct {
+	Id string `json:"id"`
 	Name string `json:"name"`
 	Types []string `json:"types"`
 	Image string `json:"image"`
@@ -43,6 +45,7 @@ func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 	
 	var pokemon Pokemon
 	json.Unmarshal([]byte(request.Body), &pokemon)
+	pokemon.Id = uuid.NewV4().String()
 
 	_, err = PokemonsCollection.InsertOne(Context, pokemon)
 	if err != nil {
