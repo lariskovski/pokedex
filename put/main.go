@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -28,14 +27,16 @@ type Response struct {
 }
 
 func main() {
-	lambda.Start(postPokemon)
+	lambda.Start(putPokemon)
 }
 
 
-// Returns all pokemons if no query string requested
-func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func putPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Name is not null if there is the name path on the API
+	// PUT /pokemons/{name}
 	name := request.PathParameters["name"]
 	if name != "" {
+		// MongoDB config
 		client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 		if err != nil {
 			log.Fatal(err)
@@ -50,6 +51,7 @@ func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 		// Transforms request body json into Pokemon struct
 		var pokemon Pokemon
 		json.Unmarshal([]byte(request.Body), &pokemon)
+		// Creates the update object to pass into Mongo
 		update := bson.D{{Key: "$set",
 			Value: bson.D{
 				{Key: "ability", Value: pokemon.Ability},
@@ -58,28 +60,27 @@ func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 				{Key: "baseStats", Value: pokemon.BaseStats},
 			},
 		}}
-		result, err := PokemonsCollection.UpdateOne(Context, bson.D{{Key: "name", Value: name}} , update)
+
+		// Updates object and returns the new one into pokemon
+		err = PokemonsCollection.FindOneAndUpdate(Context, bson.D{{Key: "name", Value: name}}, update).Decode(&pokemon)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				// This error means your query did not match any documents.
+				json, err := json.Marshal(Response{Message: "No match found."})
+				if err != nil {
+					log.Fatal(err)
+				}
+				return events.APIGatewayProxyResponse{StatusCode: 404, Body: string(json)}, nil
+			}
+		}
+		// No error on FindOneAndUpdate returns 200
+		json, err := json.Marshal(pokemon)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		if result.MatchedCount != 0 {
-			// Transform Pokemon struct into json
-			pokemon.Name = name
-			pokemon.Id = fmt.Sprint(result.UpsertedID)
-			json, err := json.Marshal(pokemon)
-			if err != nil {
-				log.Fatal(err)
-			}
-			return events.APIGatewayProxyResponse{StatusCode: 201, Body: string(json)}, nil
-		} else {
-			json, err := json.Marshal(Response{Message: "No match found."})
-			if err != nil {
-				log.Fatal(err)
-			}
-			return events.APIGatewayProxyResponse{StatusCode: 404, Body: string(json)}, nil
-		}
+		return events.APIGatewayProxyResponse{StatusCode: 200, Body: string(json)}, nil
 	} else {
+		// Enter when no {name} is passed into API call
 		json, err := json.Marshal(Response{Message: "Missing name path parameter."})
 		if err != nil {
 			log.Fatal(err)
