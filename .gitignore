@@ -19,3 +19,8 @@
 
 # Go workspace file
 go.work
+
+# Lambda compilation files
+main
+*.upx
+zip
