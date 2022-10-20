@@ -42,7 +42,7 @@ func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 	}
 	PokemonsCollection := client.Database("pokedex").Collection("pokemon")
 	
-	
+	// Transforms request body json into Pokemon struct
 	var pokemon Pokemon
 	json.Unmarshal([]byte(request.Body), &pokemon)
 	pokemon.Id = uuid.NewV4().String()
@@ -51,6 +51,12 @@ func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 	if err != nil {
 		log.Fatal(err)
 	}
-	return events.APIGatewayProxyResponse{StatusCode: 201}, nil
+
+	// Transform Pokemon struct into json
+	json, err := json.Marshal(pokemon)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return events.APIGatewayProxyResponse{StatusCode: 201, Body: string(json)}, nil
 }
 
