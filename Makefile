@@ -1,17 +1,19 @@
 GO=/usr/local/go/bin/go
 LDFLAGS=-ldflags="-s -w"
 
-all:
+build:
 	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o bin/get get/main.go
 	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o bin/post post/main.go
 	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o bin/put put/main.go
 	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o bin/delete delete/main.go
-	# @/usr/bin/upx --brute bin/*
+
+shrink: build
+	@/usr/bin/upx --brute bin/*
 
 create:
 	serverless create -t aws-go-dep -p .
 
-deploy:
+deploy: build
 	sls deploy --verbose
 
 remove:
