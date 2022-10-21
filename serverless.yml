@@ -1,0 +1,58 @@
+service: pokedex
+ 
+provider:
+  name: aws
+  runtime: go1.x
+  memorySize: 128 # optional, in MB, default is 1024
+
+package:
+ exclude:
+   - ./**
+ include:
+   - ./bin/**
+ 
+functions:
+  get:
+    handler: bin/get
+    environment:
+      MONGODB_URI: ${env:MONGODB_URI}
+    events:
+      - http:
+          path: pokemons
+          method: get
+          request:
+            parameters:
+              querystrings:
+                name: false
+  post:
+    handler: bin/post
+    environment:
+      MONGODB_URI: ${env:MONGODB_URI}
+    events:
+      - http:
+          path: pokemons
+          method: post
+  put:
+    handler: bin/put
+    environment:
+      MONGODB_URI: ${env:MONGODB_URI}
+    events:
+      - http:
+          path: pokemons/{name}
+          method: put
+          request:
+            parameters:
+              paths:
+                name: true
+  delete:
+    handler: bin/delete
+    environment:
+      MONGODB_URI: ${env:MONGODB_URI}
+    events:
+      - http:
+          path: pokemons/{name}
+          method: delete
+          request:
+            parameters:
+              paths:
+                name: true

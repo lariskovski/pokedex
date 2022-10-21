@@ -6,9 +6,15 @@ Project was made to refresh my Python web scrapping skills and learn Go. It scra
 
 ## Requirements
 
-- [upx](https://github.com/upx/upx/releases)
+- [Serverless](https://www.serverless.com/framework/docs/install-standalone)
 
 - [Go 1.19](https://go.dev/dl/)
+
+- AWS Credentials
+
+- [MongoDB](https://www.mongodb.com/es/cloud)
+
+- [upx](https://github.com/upx/upx/releases) (Optional)
 
 ## Preparing API to Lambda
 
@@ -17,6 +23,16 @@ Run the Makefile for each API method/directory. Example:
 ``make METHOD=get``
 
 Source: [SHRINK YOUR GO BINARIES WITH THIS ONE WEIRD TRICK](https://words.filippo.io/shrink-your-go-binaries-with-this-one-weird-trick/)
+
+## Deployment
+
+~~~~
+$ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+$ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+$ export AWS_DEFAULT_REGION=us-west-2
+$ make
+$ make deploy
+~~~~
 
 ## Requests Examples
 
