@@ -7,17 +7,17 @@ build:
 	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o bin/put put/main.go
 	@GOARCH=amd64 GOOS=linux ${GO} build ${LDFLAGS} -o bin/delete delete/main.go
 
-shrink: build
+shrink:
 	@/usr/bin/upx --brute bin/*
 
 create:
 	serverless create -t aws-go-dep -p .
 
 deploy: build
-	sls deploy --verbose
+	serverless deploy --verbose
 
 remove:
-	sls remove --verbose
+	serverless remove --verbose
 
 clean:
 	@${GO} clean
