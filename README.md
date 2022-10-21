@@ -1,8 +1,6 @@
 # Pokemons Go API 
 
-Project was made to refresh my Python web scrapping skills and learn Go. It scraps a web page to get Pokemon data and serves it with Go CRUD Pokemons API. Go base resource:
-- [Tech With Tim tutorial](https://www.youtube.com/watch?v=bj77B59nkTQ)
-- [Creating a Go API using an ORM Tutorial](https://www.youtube.com/watch?v=VAGodyl84OY)
+Project was made to refresh my Python web scrapping skills and learn Go. It scraps a web page to get Pokemon data and serves it with Go CRUD Pokemons API.
 
 ## Requirements
 
@@ -16,22 +14,29 @@ Project was made to refresh my Python web scrapping skills and learn Go. It scra
 
 - [upx](https://github.com/upx/upx/releases) (Optional)
 
-## Preparing API to Lambda
-
-Run the Makefile for each API method/directory. Example:
-
-``make METHOD=get``
-
-Source: [SHRINK YOUR GO BINARIES WITH THIS ONE WEIRD TRICK](https://words.filippo.io/shrink-your-go-binaries-with-this-one-weird-trick/)
-
 ## Deployment
+
+Export the needed env vars:
 
 ~~~~
 $ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 $ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 $ export AWS_DEFAULT_REGION=us-west-2
-$ make
+$ export MONGODB_URI="mongodb+srv://usr:pwd@cluster0.wasd.mongo.net"
+~~~~
+
+Build the code optionally using upx (make shirnk) to reduce package size then deploy:
+~~~~
+$ make build
+$ make shrink
 $ make deploy
+~~~~
+
+Cleaning everything local and remote (be careful):
+
+~~~~
+make clean
+make remove
 ~~~~
 
 ## Requests Examples
@@ -116,3 +121,13 @@ $ curl -X DELETE localhost:8080/pokemons/634c5cce0099c492e89f51aa
     "message": "Pokemon deleted."
 }
 ~~~~
+
+## Sources
+
+- [Tech With Tim tutorial](https://www.youtube.com/watch?v=bj77B59nkTQ)
+
+- [Creating a Go API using an ORM Tutorial](https://www.youtube.com/watch?v=VAGodyl84OY)
+
+- [SHRINK YOUR GO BINARIES WITH THIS ONE WEIRD TRICK](https://words.filippo.io/shrink-your-go-binaries-with-this-one-weird-trick/)
+
+- Many (MANY) more...
