@@ -7,7 +7,7 @@ import (
 	db "github.com/lariskovski/pokedex/api/commons"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	uuid "github.com/satori/go.uuid"
+	// uuid "github.com/satori/go.uuid"
 )
 
 type Pokemon struct {
@@ -37,7 +37,7 @@ func postPokemon(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 		// Transforms request body json into Pokemon struct
 		var pokemon Pokemon
 		json.Unmarshal([]byte(request.Body), &pokemon)
-		pokemon.Id = uuid.NewV4().String()
+		// pokemon.Id = uuid.NewV4().String()
 	
 		_, err := db.Collection.InsertOne(db.Context, pokemon)
 		if err != nil {
