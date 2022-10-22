@@ -4,6 +4,8 @@ provider:
   name: aws
   runtime: go1.x
   memorySize: 128 # optional, in MB, default is 1024
+  environment:
+    MONGODB_URI: ${env:MONGODB_URI}
 
 package:
  exclude:
@@ -14,8 +16,6 @@ package:
 functions:
   get:
     handler: bin/get
-    environment:
-      MONGODB_URI: ${env:MONGODB_URI}
     events:
       - http:
           path: pokemons
@@ -24,18 +24,18 @@ functions:
             parameters:
               querystrings:
                 name: false
+          # authorizer:
+          #   arn: ${env:LAMBDA_AUTHORIZER_ARN}
   post:
     handler: bin/post
-    environment:
-      MONGODB_URI: ${env:MONGODB_URI}
     events:
       - http:
           path: pokemons
           method: post
+          # authorizer:
+          #   arn: ${env:LAMBDA_AUTHORIZER_ARN}
   put:
     handler: bin/put
-    environment:
-      MONGODB_URI: ${env:MONGODB_URI}
     events:
       - http:
           path: pokemons/{name}
@@ -44,10 +44,10 @@ functions:
             parameters:
               paths:
                 name: true
+          # authorizer:
+          #   arn: ${env:LAMBDA_AUTHORIZER_ARN}
   delete:
     handler: bin/delete
-    environment:
-      MONGODB_URI: ${env:MONGODB_URI}
     events:
       - http:
           path: pokemons/{name}
@@ -56,3 +56,5 @@ functions:
             parameters:
               paths:
                 name: true
+          # authorizer:
+          #   arn: ${env:LAMBDA_AUTHORIZER_ARN}
