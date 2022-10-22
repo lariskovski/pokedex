@@ -1,6 +1,6 @@
 # Pokedex Go API 
 
-Project was made to learn Go, a recent but strong passion! I used another repository to a web page to get Pokemon data and serves it with this Go CRUD Pokemons API. The deployment is made using Serverless Framework which is very straighforward and has a simple interface.
+Project was made to learn Go, a recent but strong passion! It's a basic CRUD API with the deployment being made using Serverless Framework which is very straighforward and has a simple interface.
 
 ## Requirements
 
