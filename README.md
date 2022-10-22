@@ -39,6 +39,10 @@ make clean
 make remove
 ~~~~
 
+## Custom Authorizer
+
+By default API Gateway deployments aren't secure. Optionally you may add a custom authorizer following the instructions on [this](https://github.com/lariskovski/jwt-rsa-aws-custom-authorizer-serverless) repo then uncommenting the authorizer part on `serverless.yml` and exporting the `LAMBDA_AUTHORIZER_ARN`environment variable.
+
 ## Requests Examples
 
 - POST:
