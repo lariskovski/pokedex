@@ -1,7 +1,0 @@
-{
-    "name": "Squirtle",
-    "image": "/swordshield/pokemon/small/007.png",
-    "types": ["water"],
-    "ability": "Torrent Rain Dish",
-    "baseStats": {"healthPoints": "44", "attack": "48", "defense": "65", "speedAttack": "50", "speedDefense": "64", "specialDefense": "43"}
-}

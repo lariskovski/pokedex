@@ -1,20 +1,20 @@
-package initializers
+package commons
 
 import (
 	"context"
 	"log"
+	"os"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-
 var (
-	PokemonsCollection *mongo.Collection
+	Collection *mongo.Collection
 	Context context.Context
 )
 
-func ConnectToDB(){
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+func Connect(){
+	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB_URI")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,5 +24,5 @@ func ConnectToDB(){
 		log.Fatal(err)
 	}
 	pokedexDB := client.Database("pokedex")
-	PokemonsCollection = pokedexDB.Collection("pokemon")
+	Collection = pokedexDB.Collection("pokemon")
 }
